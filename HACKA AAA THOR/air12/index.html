@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Air Quality India — CrowdAQI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --card: rgba(255,255,255,0.10);
+      --accent: #7c3aed;
+      --accent-2: #06b6d4;
+      --glow: rgba(124,58,237,0.25);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    html,body{height:100%}
+    body{
+      font-family:'Inter',sans-serif;
+      margin:0;min-height:100vh;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:#e6eef8;display:flex;
+      align-items:center;justify-content:center;
+      padding:20px;overflow-x:hidden;position:relative;
+    }
+    
+    /* Air Flow Particles */
+    .air-particle {
+      position: absolute;
+      background: rgba(124, 58, 237, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    /* background bubbles */
+    .bg-bubble{
+      position:fixed;z-index:-1;border-radius:50%;opacity:.42;
+      filter:blur(32px);animation:bubblemove 18s cubic-bezier(.25,.46,.45,.94) infinite alternate;
+    }
+    .bg-bubble1{top:0;left:10vw;width:240px;height:240px;background:var(--accent);}
+    .bg-bubble2{top:60vh;right:-80px;width:200px;height:200px;background:var(--accent-2);}
+    .bg-bubble3{bottom:-80px;left:30vw;width:160px;height:160px;background:rgba(255,255,255,0.15);}
+    
+    @keyframes bubblemove {
+      from{transform:translateY(0);}
+      to{transform:translateY(-42px);}
+    }
+    
+    .container{
+      width:100%;max-width:1200px;display:grid;grid-template-columns: 1fr 450px;gap:40px;align-items:start;
+      position:relative;
+    }
+    
+    @media(max-width:900px){.container{grid-template-columns:1fr;}}
+    
+    .hero{
+      background: linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01));
+      border-radius:24px;padding:40px;box-shadow:0 20px 50px rgba(2,6,23,0.6);backdrop-filter: blur(15px);
+      border: 1px solid rgba(255,255,255,0.08);position:relative;
+      overflow:hidden;
+    }
+    
+    .logo{display:flex;align-items:center;gap:16px;}
+    .logo .mark{
+      width:60px;height:60px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2.2rem;box-shadow:0 10px 30px var(--glow);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    h1{
+      font-size:2.4rem;margin-top:25px;margin-bottom:12px;
+      background:linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    
+    .lead{color:rgba(230,238,248,0.85);margin:0 0 25px;line-height:1.7;font-size:1.1rem;}
+    
+    .stats{display:flex;gap:20px;margin-top:30px;}
+    .stat{
+      background:rgba(255,255,255,0.08);
+      padding:18px 22px;border-radius:16px;min-width:120px;text-align:center;
+      box-shadow:0 4px 20px 0 rgba(124,58,237,0.2);
+      border:1px solid rgba(255,255,255,0.08);
+      font-size:14px;transition:.3s;
+      animation: float 4s ease-in-out infinite;
+    }
+    
+    .stat:nth-child(1){animation-delay: 0s;}
+    .stat:nth-child(2){animation-delay: 0.5s;}
+    .stat:nth-child(3){animation-delay: 1s;}
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .stat:hover{transform:scale(1.08);}
+    .stat b{display:block;font-size:22px;}
+    .stat span{display:block;font-size:13px;color:#c7d7ee;}
+    
+    .card{
+      background: linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.04));
+      padding:35px 30px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow:0 15px 50px rgba(2,16,33,0.7);
+      position:relative;
+      overflow:hidden;
+    }
+    
+    form{display:flex;flex-direction:column;gap:16px;}
+    label{font-size:15px;color:#dbebfe;letter-spacing:.004em;font-weight:600;}
+    
+    input[type=text],input[type=number]{
+      width:100%;padding:16px 18px;border-radius:14px;border:none;
+      background:rgba(10,16,23,0.6);color:#fafafc;font-size:16px;
+      outline:none;border-bottom:2px solid transparent;transition:.3s box-shadow,.3s border-color;
+      box-shadow:0 2px 12px 0 rgba(6,182,212,.15);
+      margin-bottom:2px;
+    }
+    
+    input:focus{
+      border-bottom:2px solid var(--accent);
+      box-shadow:0 0 0 4px rgba(124,58,237,0.2);
+      background:rgba(15,23,42,0.8);
+      animation: inputFocus 0.3s ease-out;
+    }
+    
+    @keyframes inputFocus {
+      from { box-shadow: 0 2px 12px 0 rgba(6,182,212,.15); }
+      to { box-shadow: 0 0 0 4px rgba(124,58,237,0.2); }
+    }
+    
+    .hint{font-size:12px;color:#8ed6e8;}
+    .row{display:flex;gap:12px;}
+    
+    .btn{
+      display:inline-flex;
+      align-items:center;justify-content:center;
+      gap:8px;padding:16px 24px;
+      border-radius:14px;border:none;cursor:pointer;
+      font-weight:700;font-size:16px;letter-spacing:.01em;
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;box-shadow:0 10px 30px var(--glow);
+      transition:transform .15s,filter .15s;
+      position:relative;overflow:hidden;
+      outline:none;
+      animation: buttonGlow 2s infinite alternate;
+    }
+    
+    @keyframes buttonGlow {
+      from { box-shadow: 0 10px 30px var(--glow); }
+      to { box-shadow: 0 10px 30px var(--glow), 0 0 20px rgba(124,58,237,0.4); }
+    }
+    
+    .btn:active{transform:scale(0.96);}
+    .btn[disabled]{opacity:.6;cursor:not-allowed;}
+    
+    .btn::after{
+      content:'';
+      display:none;
+      position:absolute;top:50%;left:50%;
+      width:200%;padding-bottom:200%;
+      background:rgba(124,58,237,0.15);border-radius:50%;
+      transform:translate(-50%,-50%) scale(0);
+      z-index:0;pointer-events:none;
+      transition:transform .4s;
+    }
+    
+    .btn:active::after{
+      display:block;transform:translate(-50%,-50%) scale(1.1);
+    }
+    
+    #status{transition:.36s;color:#fed7d7;font-weight:600;}
+    .success-bounce{
+      color:#79FF9D;
+      animation:bounce 1s cubic-bezier(.91,-0.01,0,1.27);
+    }
+    .fail-shake{
+      color:#FF7B99;
+      animation:shake 0.6s cubic-bezier(.63,-0.59,0,1.24);
+    }
+    
+    @keyframes bounce{30%{transform:translateY(-9px);}50%{transform:translateY(0);}75%{transform:translateY(-3px);}100%{transform:translateY(0);}}
+    @keyframes shake{0%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-6px);}80%{transform:translateX(9px);}100%{transform:translateX(0);}}
+    
+    .toast{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:32px;padding:16px 28px 16px 24px;
+      background:rgba(10,13,25,0.95);border-radius:14px;border:1px solid rgba(255,255,255,0.08);
+      box-shadow:0 12px 50px rgba(80,24,235,0.3);
+      color:#baf6ff;display:flex;gap:12px;align-items:center;z-index:999;
+      font-size:15px;letter-spacing:.01em;
+      animation:upfade .8s;
+    }
+    
+    @keyframes upfade{0%{opacity:.1;transform:translateX(-50%) translateY(70px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
+    
+    .small{font-size:13px;color:#9fb3d9;}
+    footer.small{margin-top:10px;font-size:13px;color:#95b2d7;}
+    ::selection{background:rgba(124,58,237,0.14);}
+    
+    /* AQI Indicator */
+    .aqi-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .aqi-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    .aqi-level {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .aqi-good { background-color: var(--success); }
+    .aqi-moderate { background-color: var(--warning); }
+    .aqi-unhealthy { background-color: var(--danger); }
+    
+    .progress-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      width: 0%;
+      transition: width 1s ease;
+      border-radius: 2px;
+    }
+
+    /* Spreadsheet Info */
+    .spreadsheet-info {
+      background: rgba(255,255,255,0.05);
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-top: 20px;
+      border-left: 4px solid var(--accent);
+    }
+    .spreadsheet-info .title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--accent-2);
+    }
+    .spreadsheet-info .name {
+      font-size: 13px;
+      color: #c7d7ee;
+      margin-top: 4px;
+    }
+
+    /* India Map Section */
+    .map-section {
+      margin-top: 30px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .map-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: var(--accent-2);
+      text-align: center;
+    }
+    
+    .india-map {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(124,58,237,0.1));
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .map-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 30% 40%, rgba(124,58,237,0.2) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(6,182,212,0.2) 0%, transparent 50%);
+      animation: mapPulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes mapPulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    
+    .map-point {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+      animation: pointPulse 2s infinite;
+    }
+    
+    @keyframes pointPulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.5); opacity: 1; }
+    }
+    
+    .cities-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .city-item {
+      background: rgba(255,255,255,0.05);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .city-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <!-- Air Flow Particles -->
+  <div id="airFlow"></div>
+  
+  <!-- Background Bubbles -->
+  <div class="bg-bubble bg-bubble1"></div>
+  <div class="bg-bubble bg-bubble2"></div>
+  <div class="bg-bubble bg-bubble3"></div>
+  
+  <div class="container">
+    <section class="hero">
+      <div class="logo">
+        <div class="mark">AQ</div>
+        <div>
+          <div style="font-weight:700;font-size:1.3rem;">CrowdAQI India</div>
+          <div class="small">Real-time air quality monitoring across India</div>
+        </div>
+      </div>
+      
+      <h1>Track Air Quality Across India</h1>
+      <p class="lead">Join the movement for cleaner air. Submit your local AQI reading and help create a comprehensive air quality map of India.</p>
+      
+      <div class="stats" aria-hidden>
+        <div class="stat">
+          <b id="count">0</b>
+          <span>Submissions</span>
+        </div>
+        <div class="stat">
+          <b id="last">—</b>
+          <span>Last AQI</span>
+        </div>
+        <div class="stat">
+          <b id="avg">—</b>
+          <span>Avg AQI</span>
+        </div>
+      </div>
+
+      <!-- India Map Section -->
+      <div class="map-section">
+        <div class="map-title">Live AQI Coverage Across India</div>
+        <div class="india-map">
+          <div class="map-overlay"></div>
+          <!-- Map points will be added dynamically -->
+        </div>
+        <div class="cities-list">
+          <div class="city-item"><div class="city-dot"></div> Delhi</div>
+          <div class="city-item"><div class="city-dot"></div> Mumbai</div>
+          <div class="city-item"><div class="city-dot"></div> Bangalore</div>
+          <div class="city-item"><div class="city-dot"></div> Kolkata</div>
+        </div>
+      </div>
+
+      <div class="spreadsheet-info">
+        <div class="title">Live Data Storage:</div>
+        <div class="name">CrowdAQI_Data Spreadsheet</div>
+        <div class="small" style="margin-top: 5px;">Your data helps create real-time pollution maps across India</div>
+      </div>
+      
+      <footer class="small">Tip: Be specific with your city/location for accurate mapping</footer>
+    </section>
+    
+    <aside class="card">
+      <form id="aqiForm" autocomplete="off">
+        <label for="name">Your Name</label>
+        <input id="name" type="text" placeholder="e.g. Ravi Kumar" required />
+        
+        <label for="location">City & Location</label>
+        <input id="location" type="text" placeholder="e.g. Connaught Place, Delhi" required />
+        
+        <label for="aqi">AQI Value</label>
+        <input id="aqi" type="number" placeholder="e.g. 150" min="0" max="1000" required />
+        
+        <div class="aqi-indicator">
+          <div class="aqi-dot" id="aqiDot"></div>
+          <div class="aqi-level" id="aqiLevel">Enter AQI value</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="aqiProgress"></div>
+        </div>
+        
+        <div class="row">
+          <button id="submitBtn" class="btn" type="submit">Submit AQI Reading</button>
+          <button id="clearBtn" type="button" class="btn" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--accent)">Clear</button>
+        </div>
+        <div id="status" class="hint" style="margin-top:6px;min-height:1em"></div>
+      </form>
+    </aside>
+  </div>
+  
+  <div id="toast" class="toast" style="display:none">✅ <span id="toastText">Saved</span></div>
+  
+  <script>
+    // Updated Google Apps Script Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw181xvV5ImHkh7UUB2RlDXQfNeZDC7I1nQPiq4ImIZDs68K4TisX2sdYmpyWrS2pTeQ/exec";
+    const form = document.getElementById('aqiForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const status = document.getElementById('status');
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    const aqiInput = document.getElementById('aqi');
+    const aqiDot = document.getElementById('aqiDot');
+    const aqiLevel = document.getElementById('aqiLevel');
+    const aqiProgress = document.getElementById('aqiProgress');
+    const indiaMap = document.querySelector('.india-map');
+    
+    // Create air flow particles
+    function createAirFlow() {
+      const airFlow = document.getElementById('airFlow');
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'air-particle';
+        particle.style.width = `${Math.random() * 6 + 2}px`;
+        particle.style.height = particle.style.width;
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.opacity = Math.random() * 0.3 + 0.1;
+        particle.style.animation = `float ${Math.random() * 20 + 10}s linear infinite`;
+        
+        // Add custom float animation
+        const keyframes = `
+          @keyframes particleFloat-${i} {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(${Math.random() * 100 - 50}vw, ${Math.random() * 100 - 50}vh) rotate(360deg); }
+          }
+        `;
+        const style = document.createElement('style');
+        style.textContent = keyframes;
+        document.head.appendChild(style);
+        
+        particle.style.animation = `particleFloat-${i} ${Math.random() * 30 + 20}s linear infinite`;
+        airFlow.appendChild(particle);
+      }
+    }
+    
+    // Add points to India map
+    function addMapPoints() {
+      const points = [
+        { top: '35%', left: '25%' }, // Delhi
+        { top: '55%', left: '20%' }, // Mumbai
+        { top: '65%', left: '35%' }, // Bangalore
+        { top: '45%', left: '40%' }, // Kolkata
+        { top: '30%', left: '45%' }, // Punjab
+        { top: '60%', left: '50%' }, // Chennai
+        { top: '40%', left: '30%' }, // UP
+        { top: '50%', left: '45%' }  // Hyderabad
+      ];
+      
+      points.forEach(point => {
+        const mapPoint = document.createElement('div');
+        mapPoint.className = 'map-point';
+        mapPoint.style.top = point.top;
+        mapPoint.style.left = point.left;
+        mapPoint.style.animationDelay = `${Math.random() * 2}s`;
+        indiaMap.appendChild(mapPoint);
+      });
+    }
+    
+    // Update AQI indicator based on value
+    function updateAqiIndicator(value) {
+      if (!value || isNaN(value)) {
+        aqiDot.style.backgroundColor = 'transparent';
+        aqiLevel.textContent = 'Enter AQI value';
+        aqiProgress.style.width = '0%';
+        return;
+      }
+      
+      const progress = Math.min((value / 500) * 100, 100);
+      aqiProgress.style.width = `${progress}%`;
+      
+      if (value <= 50) {
+        aqiDot.className = 'aqi-dot aqi-good';
+        aqiLevel.textContent = 'Good Air Quality';
+        aqiLevel.style.color = '#10b981';
+      } else if (value <= 100) {
+        aqiDot.className = 'aqi-dot aqi-moderate';
+        aqiLevel.textContent = 'Moderate Air Quality';
+        aqiLevel.style.color = '#f59e0b';
+      } else {
+        aqiDot.className = 'aqi-dot aqi-unhealthy';
+        aqiLevel.textContent = 'Unhealthy Air Quality';
+        aqiLevel.style.color = '#ef4444';
+      }
+    }
+    
+    function showToast(msg){
+      toastText.textContent = msg;
+      toast.style.display='flex';
+      setTimeout(()=>toast.style.display='none',2600)
+    }
+    
+    function setLoading(on){
+      submitBtn.disabled = on;
+      submitBtn.textContent = on ? 'Saving to Map...' : 'Submit AQI Reading';
+    }
+    
+    clearBtn.addEventListener('click', ()=>{ 
+      form.reset(); 
+      status.textContent=''; 
+      status.className='hint'; 
+      updateAqiIndicator(null);
+    });
+    
+    aqiInput.addEventListener('input', (e) => {
+      updateAqiIndicator(Number(e.target.value));
+    });
+    
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const aqi = Number(document.getElementById('aqi').value);
+      
+      if(!name || !location || isNaN(aqi)){
+        status.textContent = 'Please fill all fields with valid values.'; 
+        status.className='fail-shake'; 
+        return;
+      }
+      
+      setLoading(true); 
+      status.textContent='';
+      
+      try {
+        // Using URL parameters for GET request
+        const params = new URLSearchParams();
+        params.append('name', name);
+        params.append('location', location);
+        params.append('aqi', aqi);
+        
+        const response = await fetch(`${SCRIPT_URL}?${params.toString()}`, {
+          method: 'GET',
+          mode: 'no-cors'
+        });
+        
+        showToast('Data submitted to India Map!');
+        form.reset();
+        status.textContent = '✓ Added to India AQI Map!';
+        status.className='success-bounce';
+        updateAqiIndicator(null);
+        
+        // Update stats with animation
+        const cntEl = document.getElementById('count');
+        cntEl.textContent = Number(cntEl.textContent||0)+1;
+        document.getElementById('last').textContent = aqi;
+        
+        // Animate the updated stat
+        cntEl.parentElement.animate([
+          { transform: 'scale(1)' },
+          { transform: 'scale(1.2)' },
+          { transform: 'scale(1)' }
+        ], { duration: 500 });
+        
+      } catch(err) {
+        console.error('Submission error:', err);
+        status.textContent = '❌ Submission failed — check connection!';
+        status.className='fail-shake';
+        showToast('Failed to save — try again');
+      } finally { 
+        setLoading(false);
+      }
+    });
+    
+    // Initialize animations
+    createAirFlow();
+    addMapPoints();
+    
+    // subtle stats pulse
+    setInterval(()=>{
+      const el=document.querySelector('.stats');
+      if(!el)return;
+      el.animate([{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}],{duration:1200}).finished.catch(()=>{});
+    },5400);
+  </script>
+</body>
+</html>
